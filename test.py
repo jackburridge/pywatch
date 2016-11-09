@@ -47,6 +47,11 @@ class MyFrame(wx.Frame):
         self.search_ctrl.ShowCancelButton(False)
         sizer.Add(self.search_ctrl, 0, wx.ALL | wx.EXPAND, 5)
 
+        self.static_text_markup = wx.StaticText(self, wx.ID_ANY, u"MyLabel", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.static_text_markup.Wrap(-1)
+
+        sizer.Add(self.static_text_markup, 0, wx.ALL | wx.EXPAND, 5)
+
         self.SetSizer(sizer)
         self.Layout()
 
@@ -56,18 +61,18 @@ class MyFrame(wx.Frame):
         model["number"] = 1
         model["bool"] = True
         model["text"] = "text"
-        wxwatch.LabelWatcher(self.static_text, (model.get_watcher("number"), model.get_watcher("text")),
-                             format="The current number is %s and current text \"%s\".")
-        wxwatch.SpinCtrlWatcher(self.spin_ctrl, model.get_watcher("number"))
-        wxwatch.SliderWatcher(self.slider, model.get_watcher("number"))
-        wxwatch.GaugeWatcher(self.gauge, model.get_watcher("number"))
-        wxwatch.CheckBoxWatcher(self.check_box, model.get_watcher("bool"))
-        wxwatch.LabelWatcher(self.toggle_btn, (model.get_watcher("number"),), format="Button with number %s.")
-        wxwatch.ToggleButtonWatcher(self.toggle_btn, model.get_watcher("bool"))
-        wxwatch.TextCtrlWatcher(self.text_ctrl, model.get_watcher("text"))
-        wxwatch.TextCtrlWatcher(self.search_ctrl, model.get_watcher("text"))
-        wxwatch.EnableWatcher(self.spin_ctrl, model.get_watcher("bool"))
-
+        wxwatch.LabelWatcher(self.static_text, model, ("number", "text"),
+                             format="The current number is {} and current text \"{}\".")
+        wxwatch.SpinCtrlWatcher(self.spin_ctrl, model, "number")
+        wxwatch.SliderWatcher(self.slider, model, "number")
+        wxwatch.GaugeWatcher(self.gauge, model, "number")
+        wxwatch.CheckBoxWatcher(self.check_box, model, "bool")
+        wxwatch.LabelWatcher(self.toggle_btn, model, ("number",), format="Button with number {}.")
+        wxwatch.ToggleButtonWatcher(self.toggle_btn, model, "bool")
+        wxwatch.TextCtrlWatcher(self.text_ctrl, model, "text")
+        wxwatch.TextCtrlWatcher(self.search_ctrl, model, "text")
+        wxwatch.EnableWatcher(self.spin_ctrl, model, "bool")
+        wxwatch.LabelMarkupWatcher(self.static_text_markup, model, ("text",), format="Formatted: <b>\"{}\"</b>.")
 
 if __name__ == "__main__":
     app = wx.App()

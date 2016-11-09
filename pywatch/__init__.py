@@ -2,55 +2,56 @@ import logging
 import traceback
 
 
+class WatchableDict(dict):
+    def __init__(self, *args, **kwargs):
+        self.watchers = {}
+        dict.__init__(self, *args, **kwargs)
+
+    def __setitem__(self, item, value):
+        if item in self:
+            changed = self[item] != value
+        else:
+            changed = True
+        super(WatchableDict, self).__setitem__(item, value)
+        if item in self.watchers:
+            if changed:
+                for watcher in self.watchers[item]:
+                    try:
+                        watcher()
+                    except Exception as e:
+                        logging.error(traceback.format_exc())
+
+    def bind(self, callback, name):
+        if name in self.watchers:
+            self.watchers[name].append(callback)
+        else:
+            self.watchers[name] = [callback]
+
+
 class Watcher:
-    def __init__(self, watch_object, item):
-        self.watch_object = watch_object
-        self.item = item
-        self.listeners = []
-
-    def bind(self, callback):
-        self.listeners.append(callback)
-
-    def notify(self):
-        for listener in self.listeners:
-            try:
-                listener()
-            except Exception as e:
-                logging.error(traceback.format_exc())
+    def __init__(self, widget, watchable, watch):
+        self.widget = widget
+        self.watchable = watchable
+        self.watcher = watch
+        watchable.bind(self.callback, watch)
 
     def get_value(self):
-        return self.watch_object[self.item]
+        return self.watchable[self.watcher]
 
     def set_value(self, value):
-        self.watch_object[self.item] = value
+        self.watchable[self.watcher] = value
+
+    def callback(self):
+        pass
 
 
-class WatchableDict(dict):
-    def __init__(self, seq=None, **kwargs):
-        self.watchers = {}
-        dict.__init__(self)
-
-    def __setitem__(self, item, new_value):
-        new_b = item in self
-        old_value = self[item] if item in self else None
-        dict.__setitem__(self, item, new_value)
-        if new_b:
-            if old_value != new_value:
-                self.watchers[item].notify()
-        else:
-            self.watchers[item] = Watcher(self, item)
-
-    def get_watcher(self, name):
-        if name in self.watchers:
-            return self.watchers[name]
-        return None
-
-
-class PropertyWatcher:
-    def __init__(self, widget, watcher):
+class MultipleWatcher:
+    def __init__(self, widget, watchable, watchers):
         self.widget = widget
-        self.watcher = watcher
-        watcher.bind(self.callback)
+        self.watchable = watchable
+        self.watchers = watchers
+        for watch in watchers:
+            watchable.bind(self.callback, watch)
 
     def callback(self):
         pass

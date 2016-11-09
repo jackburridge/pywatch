@@ -1,80 +1,94 @@
 import wx
 
-from .. import PropertyWatcher
+from .. import Watcher, MultipleWatcher
 
 
-class EnableWatcher(PropertyWatcher):
-    def __init__(self, widget, watcher):
-        PropertyWatcher.__init__(self, widget, watcher)
-        self.widget.Enable(watcher.get_value())
+class EnableWatcher(Watcher):
+    def __init__(self, widget, watchable, watcher):
+        Watcher.__init__(self, widget, watchable, watcher)
+        self.widget.Enable(self.get_value())
 
     def callback(self):
-        self.widget.Enable(self.watcher.get_value())
+        self.widget.Enable(self.get_value())
 
 
-class LabelWatcher:
-    def __init__(self, widget, watchers, format="%s"):
-        self.widget = widget
+class LabelWatcher(MultipleWatcher):
+    def __init__(self, widget, watchable, watchers, format="{0}"):
+        MultipleWatcher.__init__(self, widget, watchable, watchers)
         self.format = format
-        self.watchers = watchers
-        for watcher in watchers:
-            watcher.bind(self.callback)
 
         self.__set_label()
 
     def __set_label(self):
-        self.widget.SetLabel(self.format % tuple(watcher.get_value() for watcher in self.watchers))
+        t = tuple(self.watchable[watcher] for watcher in self.watchers)
+        self.widget.SetLabel(self.format.format(*t))
 
     def callback(self):
         self.__set_label()
         self.widget.GetParent().Layout()
 
 
-class ValueWatcher(PropertyWatcher):
-    def __init__(self, widget, watcher):
-        PropertyWatcher.__init__(self, widget, watcher)
-        self.widget.SetValue(watcher.get_value())
+class LabelMarkupWatcher(MultipleWatcher):
+    def __init__(self, widget, watchable, watchers, format="{0}"):
+        MultipleWatcher.__init__(self, widget, watchable, watchers)
+        self.format = format
+
+        self.__set_label()
+
+    def __set_label(self):
+        t = tuple(self.watchable[watcher] for watcher in self.watchers)
+        self.widget.SetLabelMarkup(self.format.format(*t))
+
+    def callback(self):
+        self.__set_label()
+        self.widget.GetParent().Layout()
+
+
+class ValueWatcher(Watcher):
+    def __init__(self, widget, watchable, watcher):
+        Watcher.__init__(self, widget, watchable, watcher)
+        self.widget.SetValue(self.get_value())
 
     def callback(self):
         if wx.Window.FindFocus() != self.widget:
-            self.widget.SetValue(self.watcher.get_value())
+            self.widget.SetValue(self.get_value())
 
 
 class ValueChangeWatcher(ValueWatcher):
-    def __init__(self, widget, watcher, event):
-        ValueWatcher.__init__(self, widget, watcher)
+    def __init__(self, widget, watchable, watcher, event):
+        ValueWatcher.__init__(self, widget, watchable, watcher)
         widget.Bind(event, self.on_change)
 
     def on_change(self, event):
-        self.watcher.set_value(self.widget.GetValue())
+        self.set_value(self.widget.GetValue())
         event.Skip()
 
 
 class SpinCtrlWatcher(ValueChangeWatcher):
-    def __init__(self, spin_ctrl, watcher):
-        ValueChangeWatcher.__init__(self, spin_ctrl, watcher, wx.EVT_SPINCTRL)
+    def __init__(self, spin_ctrl, watchable, watcher):
+        ValueChangeWatcher.__init__(self, spin_ctrl, watchable, watcher, wx.EVT_SPINCTRL)
 
 
 class SliderWatcher(ValueChangeWatcher):
-    def __init__(self, spin_ctrl, watcher):
-        ValueChangeWatcher.__init__(self, spin_ctrl, watcher, wx.EVT_SCROLL)
+    def __init__(self, spin_ctrl, watchable, watcher):
+        ValueChangeWatcher.__init__(self, spin_ctrl, watchable, watcher, wx.EVT_SCROLL)
 
 
 class GaugeWatcher(ValueWatcher):
-    def __init__(self, gauge, watcher):
-        ValueWatcher.__init__(self, gauge, watcher)
+    def __init__(self, gauge, watchable, watcher):
+        ValueWatcher.__init__(self, gauge, watchable, watcher)
 
 
 class CheckBoxWatcher(ValueChangeWatcher):
-    def __init__(self, check_box, watcher):
-        ValueChangeWatcher.__init__(self, check_box, watcher, wx.EVT_CHECKBOX)
+    def __init__(self, check_box, watchable, watcher):
+        ValueChangeWatcher.__init__(self, check_box, watchable, watcher, wx.EVT_CHECKBOX)
 
 
 class ToggleButtonWatcher(ValueChangeWatcher):
-    def __init__(self, toggle_btn, watcher):
-        ValueChangeWatcher.__init__(self, toggle_btn, watcher, wx.EVT_TOGGLEBUTTON)
+    def __init__(self, toggle_btn, watchable, watcher):
+        ValueChangeWatcher.__init__(self, toggle_btn, watchable, watcher, wx.EVT_TOGGLEBUTTON)
 
 
 class TextCtrlWatcher(ValueChangeWatcher):
-    def __init__(self, toggle_btn, watcher):
-        ValueChangeWatcher.__init__(self, toggle_btn, watcher, wx.EVT_TEXT)
+    def __init__(self, toggle_btn, watchable, watcher):
+        ValueChangeWatcher.__init__(self, toggle_btn, watchable, watcher, wx.EVT_TEXT)
