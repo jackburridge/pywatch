@@ -20,7 +20,7 @@ class LabelWatcher(MultipleWatcher):
         self.__set_label()
 
     def __set_label(self):
-        t = tuple(self.watchable[watcher] for watcher in self.watchers)
+        t = self.get_values()
         self.widget.SetLabel(self.format.format(*t))
 
     def callback(self):
@@ -36,7 +36,7 @@ class LabelMarkupWatcher(MultipleWatcher):
         self.__set_label()
 
     def __set_label(self):
-        t = tuple(self.watchable[watcher] for watcher in self.watchers)
+        t = self.get_values()
         self.widget.SetLabelMarkup(self.format.format(*t))
 
     def callback(self):
@@ -47,10 +47,10 @@ class LabelMarkupWatcher(MultipleWatcher):
 class ValueWatcher(Watcher):
     def __init__(self, widget, watchable, watcher):
         Watcher.__init__(self, widget, watchable, watcher)
-        self.widget.SetValue(self.get_value())
+        self.widget.SetValue(self.get_value(self.widget.GetValue()))
 
     def callback(self):
-        if wx.Window.FindFocus() != self.widget:
+        if self.widget.GetValue() != self.get_value():
             self.widget.SetValue(self.get_value())
 
 
@@ -92,3 +92,16 @@ class ToggleButtonWatcher(ValueChangeWatcher):
 class TextCtrlWatcher(ValueChangeWatcher):
     def __init__(self, toggle_btn, watchable, watcher):
         ValueChangeWatcher.__init__(self, toggle_btn, watchable, watcher, wx.EVT_TEXT)
+
+
+class ListBoxItemWatcher(Watcher):
+    def __init__(self, listbox, watchable, watcher):
+        Watcher.__init__(self, listbox, watchable, watcher)
+        self.__set_items()
+
+    def __set_items(self):
+        t = tuple("{0}".format(item) for item in self.watchable[self.watcher])
+        self.widget.SetItems(t)
+
+    def callback(self):
+        self.__set_items()

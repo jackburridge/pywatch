@@ -1,7 +1,7 @@
 import wx
 
+import pywatch.wx
 from pywatch import WatchableDict
-from pywatch import wxwatch
 
 
 class MyFrame(wx.Frame):
@@ -61,18 +61,18 @@ class MyFrame(wx.Frame):
         model["number"] = 1
         model["bool"] = True
         model["text"] = "text"
-        wxwatch.LabelWatcher(self.static_text, model, ("number", "text"),
-                             format="The current number is {} and current text \"{}\".")
-        wxwatch.SpinCtrlWatcher(self.spin_ctrl, model, "number")
-        wxwatch.SliderWatcher(self.slider, model, "number")
-        wxwatch.GaugeWatcher(self.gauge, model, "number")
-        wxwatch.CheckBoxWatcher(self.check_box, model, "bool")
-        wxwatch.LabelWatcher(self.toggle_btn, model, ("number",), format="Button with number {}.")
-        wxwatch.ToggleButtonWatcher(self.toggle_btn, model, "bool")
-        wxwatch.TextCtrlWatcher(self.text_ctrl, model, "text")
-        wxwatch.TextCtrlWatcher(self.search_ctrl, model, "text")
-        wxwatch.EnableWatcher(self.spin_ctrl, model, "bool")
-        wxwatch.LabelMarkupWatcher(self.static_text_markup, model, ("text",), format="Formatted: <b>\"{}\"</b>.")
+        pywatch.wx.LabelWatcher(self.static_text, model, ("number", "text"),
+                                format="The current number is {} and current text \"{}\".")
+        pywatch.wx.SpinCtrlWatcher(self.spin_ctrl, model, "number")
+        pywatch.wx.SliderWatcher(self.slider, model, "number")
+        pywatch.wx.GaugeWatcher(self.gauge, model, "number")
+        pywatch.wx.CheckBoxWatcher(self.check_box, model, "bool")
+        pywatch.wx.LabelWatcher(self.toggle_btn, model, ("number",), format="Button with number {}.")
+        pywatch.wx.ToggleButtonWatcher(self.toggle_btn, model, "bool")
+        pywatch.wx.TextCtrlWatcher(self.text_ctrl, model, "text")
+        pywatch.wx.TextCtrlWatcher(self.search_ctrl, model, "text")
+        pywatch.wx.EnableWatcher(self.spin_ctrl, model, "bool")
+        pywatch.wx.LabelMarkupWatcher(self.static_text_markup, model, ("text",), format="Formatted: <b>\"{}\"</b>.")
 
 if __name__ == "__main__":
     app = wx.App()
