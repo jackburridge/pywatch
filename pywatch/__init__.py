@@ -75,17 +75,33 @@ class WatchableDict(dict, Watchable):
         self._notify_watchers(key)
 
 
+def get_watchers(watcher):
+    if isinstance(watcher, basestring):
+        return [watcher]
+    else:
+        return watcher[:-1]
+
+
+def get_watcher_value(watchable, watcher):
+    if isinstance(watcher, basestring):
+        return watchable[watcher]
+    else:
+        t = tuple(watchable[w] for w in watcher[:-1])
+        return watcher[-1](*t)
+
+
 class Watcher:
-    def __init__(self, widget, watchable, watch):
+    def __init__(self, widget, watchable, watcher):
         self.widget = widget
         self.watchable = watchable
-        self.watcher = watch
-        watchable.bind(self.callback, watch)
+        self.watcher = watcher
+        for w in set(get_watchers(watcher)):
+            watchable.bind(self.callback, w)
 
     def get_value(self, value=None):
         if self.watcher not in self.watchable:
             self.watchable[self.watcher] = value
-        return self.watchable[self.watcher]
+        return get_watcher_value(self.watchable, self.watcher)
 
     def set_value(self, value):
         self.watchable[self.watcher] = value
@@ -99,11 +115,14 @@ class MultipleWatcher:
         self.widget = widget
         self.watchable = watchable
         self.watchers = watchers
-        for watch in watchers:
-            watchable.bind(self.callback, watch)
+        watchers_all = []
+        for w in watchers:
+            watchers_all += get_watchers(w)
+        for w in set(watchers_all):
+            watchable.bind(self.callback, w)
 
     def get_values(self):
-        return tuple(self.watchable[watcher] for watcher in self.watchers)
+        return tuple(get_watcher_value(self.watchable, watcher) for watcher in self.watchers)
 
     def callback(self):
         pass
