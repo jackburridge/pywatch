@@ -17,16 +17,26 @@ class MyFrame(wx.Frame):
         gb_sizer.SetFlexibleDirection(wx.BOTH)
         gb_sizer.SetNonFlexibleGrowMode(wx.FLEX_GROWMODE_SPECIFIED)
 
-        listboxChoices = []
-        self.listbox = wx.ListBox(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, listboxChoices, 0)
-        gb_sizer.Add(self.listbox, wx.GBPosition(0, 0), wx.GBSpan(1, 2), wx.EXPAND, 5)
+        list_boxChoices = []
+        self.list_box = wx.ListBox(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, list_boxChoices, 0)
+        gb_sizer.Add(self.list_box, wx.GBPosition(0, 0), wx.GBSpan(1, 2), wx.EXPAND, 0)
+
+        combo_boxChoices = []
+        self.combo_box = wx.ComboBox(self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize,
+                                     combo_boxChoices, 0)
+        gb_sizer.Add(self.combo_box, wx.GBPosition(1, 0), wx.GBSpan(1, 2), wx.EXPAND, 0)
+
+        choiceChoices = []
+        self.choice = wx.Choice(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, choiceChoices, 0)
+        self.choice.SetSelection(0)
+        gb_sizer.Add(self.choice, wx.GBPosition(2, 0), wx.GBSpan(1, 2), wx.EXPAND, 0)
 
         self.text_ctrl = wx.TextCtrl(self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize,
                                      wx.TE_PROCESS_ENTER)
-        gb_sizer.Add(self.text_ctrl, wx.GBPosition(1, 0), wx.GBSpan(1, 1), wx.EXPAND, 5)
+        gb_sizer.Add(self.text_ctrl, wx.GBPosition(3, 0), wx.GBSpan(1, 1), wx.EXPAND, 0)
 
         self.button = wx.Button(self, wx.ID_ANY, u"Add", wx.DefaultPosition, wx.DefaultSize, 0)
-        gb_sizer.Add(self.button, wx.GBPosition(1, 1), wx.GBSpan(1, 1), 0, 5)
+        gb_sizer.Add(self.button, wx.GBPosition(3, 1), wx.GBSpan(1, 1), wx.ALL, 0)
 
         gb_sizer.AddGrowableCol(0)
         gb_sizer.AddGrowableRow(0)
@@ -45,7 +55,9 @@ class MyFrame(wx.Frame):
         self.model = WatchableDict()
         self.model["list"] = []
         pywatch.wx.TextCtrlWatcher(self.text_ctrl, self.model, "text")
-        pywatch.wx.ListBoxItemWatcher(self.listbox, self.model, "list")
+        pywatch.wx.ItemContainerItemWatcher(self.list_box, self.model, "list")
+        pywatch.wx.ItemContainerItemWatcher(self.choice, self.model, "list")
+        pywatch.wx.ItemContainerItemWatcher(self.combo_box, self.model, "list")
 
     # Virtual event handlers, overide them in your derived class
     def on_add(self, event):
