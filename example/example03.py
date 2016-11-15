@@ -41,6 +41,7 @@ class MyFrame(wx.Frame):
         self.model["complete"] = 0
         pywatch.wx.GaugeWatcher(self.gauge, self.model, "complete")
 
+
     # Virtual event handlers, overide them in your derived class
     def on_run(self, event):
         thread.start_new_thread(self.background_task, ())
@@ -52,7 +53,6 @@ class MyFrame(wx.Frame):
             self.model["complete"] = i
             time.sleep(0.01)
             i += 1
-
 
 if __name__ == "__main__":
     app = wx.App()

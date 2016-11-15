@@ -65,7 +65,7 @@ class MyFrame(wx.Frame):
                                 format="The current number is {} and current text \"{}\".")
         pywatch.wx.SpinCtrlWatcher(self.spin_ctrl, model, "number")
         pywatch.wx.SliderWatcher(self.slider, model, "number")
-        pywatch.wx.GaugeWatcher(self.gauge, model, "number")
+        pywatch.wx.ValueWatcher(self.gauge, model, "number")
         pywatch.wx.CheckBoxWatcher(self.check_box, model, "bool")
         pywatch.wx.LabelWatcher(self.toggle_btn, model, ("number",), format="Button with number {}.")
         pywatch.wx.ToggleButtonWatcher(self.toggle_btn, model, "bool")

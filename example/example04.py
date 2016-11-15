@@ -47,7 +47,6 @@ class MyFrame(wx.Frame):
 
 
         # Virtual event handlers, overide them in your derived class
-
     def on_run(self, event):
         thread.start_new_thread(self.background_task, ())
         event.Skip()

@@ -72,17 +72,29 @@ class ValueChangeWatcher(ValueWatcher):
         event.Skip()
 
 
-SpinCtrlWatcher = ValueChangeWatcher
+class SpinCtrlWatcher(ValueChangeWatcher):
+    def __init__(self, spin_ctrl, watchable, watcher):
+        ValueChangeWatcher.__init__(self, spin_ctrl, watchable, watcher, wx.EVT_SPINCTRL)
 
-SliderWatcher = ValueChangeWatcher
 
-GaugeWatcher = ValueWatcher
+class SliderWatcher(ValueChangeWatcher):
+    def __init__(self, spin_ctrl, watchable, watcher):
+        ValueChangeWatcher.__init__(self, spin_ctrl, watchable, watcher, wx.EVT_SCROLL)
 
-CheckBoxWatcher = ValueChangeWatcher
 
-ToggleButtonWatcher = ValueChangeWatcher
+class CheckBoxWatcher(ValueChangeWatcher):
+    def __init__(self, check_box, watchable, watcher):
+        ValueChangeWatcher.__init__(self, check_box, watchable, watcher, wx.EVT_CHECKBOX)
 
-TextCtrlWatcher = ValueChangeWatcher
+
+class ToggleButtonWatcher(ValueChangeWatcher):
+    def __init__(self, toggle_btn, watchable, watcher):
+        ValueChangeWatcher.__init__(self, toggle_btn, watchable, watcher, wx.EVT_TOGGLEBUTTON)
+
+
+class TextCtrlWatcher(ValueChangeWatcher):
+    def __init__(self, toggle_btn, watchable, watcher):
+        ValueChangeWatcher.__init__(self, toggle_btn, watchable, watcher, wx.EVT_TEXT)
 
 
 class ItemContainerItemWatcher(Watcher):
