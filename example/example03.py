@@ -39,7 +39,7 @@ class MyFrame(wx.Frame):
         self.button.Bind(wx.EVT_BUTTON, self.on_run)
         self.model = WatchableDict()
         self.model["complete"] = 0
-        pywatch.wx.GaugeWatcher(self.gauge, self.model, "complete")
+        pywatch.wx.ValueWatcher(self.gauge, self.model, "complete")
 
 
     # Virtual event handlers, overide them in your derived class

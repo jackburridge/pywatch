@@ -13,7 +13,8 @@ class MyFrame(wx.Frame):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.static_text = wx.StaticText(self, wx.ID_ANY, u"MyLabel", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.static_text = wx.StaticText(self, wx.ID_ANY, u"The current number is {} and current text \"{}\".",
+                                         wx.DefaultPosition, wx.DefaultSize, 0)
         self.static_text.Wrap(-1)
 
         sizer.Add(self.static_text, 0, wx.ALL | wx.EXPAND, 5)
@@ -34,7 +35,8 @@ class MyFrame(wx.Frame):
 
         sizer.Add(self.check_box, 0, wx.ALL, 5)
 
-        self.toggle_btn = wx.ToggleButton(self, wx.ID_ANY, u"Toggle me!", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.toggle_btn = wx.ToggleButton(self, wx.ID_ANY, u"Button with number {}.", wx.DefaultPosition,
+                                          wx.DefaultSize, 0)
 
         sizer.Add(self.toggle_btn, 0, wx.ALL, 5)
 
@@ -47,7 +49,8 @@ class MyFrame(wx.Frame):
         self.search_ctrl.ShowCancelButton(False)
         sizer.Add(self.search_ctrl, 0, wx.ALL | wx.EXPAND, 5)
 
-        self.static_text_markup = wx.StaticText(self, wx.ID_ANY, u"MyLabel", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.static_text_markup = wx.StaticText(self, wx.ID_ANY, u"Formatted: <b>\"{}\"</b>.", wx.DefaultPosition,
+                                                wx.DefaultSize, 0)
         self.static_text_markup.Wrap(-1)
 
         sizer.Add(self.static_text_markup, 0, wx.ALL | wx.EXPAND, 5)
@@ -61,18 +64,17 @@ class MyFrame(wx.Frame):
         model["number"] = 1
         model["bool"] = True
         model["text"] = "text"
-        pywatch.wx.LabelWatcher(self.static_text, model, ("number", "text"),
-                                format="The current number is {} and current text \"{}\".")
+        pywatch.wx.LabelWatcher(self.static_text, model, "number", "text")
         pywatch.wx.SpinCtrlWatcher(self.spin_ctrl, model, "number")
         pywatch.wx.SliderWatcher(self.slider, model, "number")
         pywatch.wx.ValueWatcher(self.gauge, model, "number")
         pywatch.wx.CheckBoxWatcher(self.check_box, model, "bool")
-        pywatch.wx.LabelWatcher(self.toggle_btn, model, ("number",), format="Button with number {}.")
+        pywatch.wx.LabelWatcher(self.toggle_btn, model, "number")
         pywatch.wx.ToggleButtonWatcher(self.toggle_btn, model, "bool")
         pywatch.wx.TextCtrlWatcher(self.text_ctrl, model, "text")
         pywatch.wx.TextCtrlWatcher(self.search_ctrl, model, "text")
         pywatch.wx.EnableWatcher(self.spin_ctrl, model, "bool")
-        pywatch.wx.LabelMarkupWatcher(self.static_text_markup, model, ("text",), format="Formatted: <b>\"{}\"</b>.")
+        pywatch.wx.LabelMarkupWatcher(self.static_text_markup, model, "text")
 
 if __name__ == "__main__":
     app = wx.App()

@@ -95,7 +95,7 @@ class Watcher:
 
 
 class MultipleWatcher:
-    def __init__(self, widget, watchable, watchers):
+    def __init__(self, widget, watchable, *watchers):
         self.widget = widget
         self.watchable = watchable
         self.watchers = watchers

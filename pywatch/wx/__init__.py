@@ -4,10 +4,10 @@ from .. import Watcher, MultipleWatcher
 
 
 def call_after(func):
-    def mycallafter(*args, **kws):
-        wx.CallAfter(func, *args, **kws)
+    def my_call_after(*args, **kwargs):
+        wx.CallAfter(func, *args, **kwargs)
 
-    return mycallafter
+    return my_call_after
 
 
 class EnableWatcher(Watcher):
@@ -20,34 +20,28 @@ class EnableWatcher(Watcher):
 
 
 class LabelWatcher(MultipleWatcher):
-    def __init__(self, widget, watchable, watchers, format="{0}"):
-        MultipleWatcher.__init__(self, widget, watchable, watchers)
-        self.format = format
+    def __init__(self, widget, watchable, *watchers):
+        MultipleWatcher.__init__(self, widget, watchable, *watchers)
+        self.format = widget.GetLabel()
+        self.callback()
 
-        self.__set_label()
-
-    def __set_label(self):
+    @call_after
+    def callback(self):
         t = self.get_values()
         self.widget.SetLabel(self.format.format(*t))
-
-    def callback(self):
-        self.__set_label()
         self.widget.GetParent().Layout()
 
 
 class LabelMarkupWatcher(MultipleWatcher):
-    def __init__(self, widget, watchable, watchers, format="{0}"):
-        MultipleWatcher.__init__(self, widget, watchable, watchers)
-        self.format = format
+    def __init__(self, widget, watchable, *watchers):
+        MultipleWatcher.__init__(self, widget, watchable, *watchers)
+        self.format = widget.GetLabel()
+        self.callback()
 
-        self.__set_label()
-
-    def __set_label(self):
+    @call_after
+    def callback(self):
         t = self.get_values()
         self.widget.SetLabelMarkup(self.format.format(*t))
-
-    def callback(self):
-        self.__set_label()
         self.widget.GetParent().Layout()
 
 
@@ -72,6 +66,42 @@ class ValueChangeWatcher(ValueWatcher):
         event.Skip()
 
 
+class SelectionChangeWatcher(Watcher):
+    def __init__(self, widget, watchable, watcher, event):
+        Watcher.__init__(self, widget, watchable, watcher)
+        self.widget.SetSelection(self.get_value(self.widget.GetSelection()))
+        widget.Bind(event, self.on_change)
+
+    @call_after
+    def callback(self):
+        if self.widget.GetSelection() != self.get_value():
+            self.widget.SetSelection(self.get_value())
+
+    def on_change(self, event):
+        self.set_value(self.widget.GetSelection())
+        event.Skip()
+
+
+class ListBoxWatcher(SelectionChangeWatcher):
+    def __init__(self, list_box, watchable, watcher):
+        SelectionChangeWatcher.__init__(self, list_box, watchable, watcher, wx.EVT_LISTBOX)
+
+
+class RadioBoxWatcher(SelectionChangeWatcher):
+    def __init__(self, radio_box, watchable, watcher):
+        SelectionChangeWatcher.__init__(self, radio_box, watchable, watcher, wx.EVT_RADIOBOX)
+
+
+class ChoiceWatcher(SelectionChangeWatcher):
+    def __init__(self, radio_box, watchable, watcher):
+        SelectionChangeWatcher.__init__(self, radio_box, watchable, watcher, wx.EVT_CHOICE)
+
+
+class ComboBoxWatcher(SelectionChangeWatcher):
+    def __init__(self, radio_box, watchable, watcher):
+        SelectionChangeWatcher.__init__(self, radio_box, watchable, watcher, wx.EVT_COMBOBOX)
+
+
 class SpinCtrlWatcher(ValueChangeWatcher):
     def __init__(self, spin_ctrl, watchable, watcher):
         ValueChangeWatcher.__init__(self, spin_ctrl, watchable, watcher, wx.EVT_SPINCTRL)
@@ -93,13 +123,13 @@ class ToggleButtonWatcher(ValueChangeWatcher):
 
 
 class TextCtrlWatcher(ValueChangeWatcher):
-    def __init__(self, toggle_btn, watchable, watcher):
-        ValueChangeWatcher.__init__(self, toggle_btn, watchable, watcher, wx.EVT_TEXT)
+    def __init__(self, text_ctrl, watchable, watcher):
+        ValueChangeWatcher.__init__(self, text_ctrl, watchable, watcher, wx.EVT_TEXT)
 
 
 class ItemContainerItemWatcher(Watcher):
-    def __init__(self, listbox, watchable, watcher):
-        Watcher.__init__(self, listbox, watchable, watcher)
+    def __init__(self, item_container, watchable, watcher):
+        Watcher.__init__(self, item_container, watchable, watcher)
         self.callback()
 
     @call_after
