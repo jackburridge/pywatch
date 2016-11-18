@@ -75,28 +75,41 @@ class WatchableDict(dict, Watchable):
         self._notify_watchers(key)
 
 
-def get_watchers(watcher):
+def get_watcher_names(watcher):
     if isinstance(watcher, basestring):
         return [watcher]
     else:
         return watcher[:-1]
 
 
+def get_watcher(watchable, watcher):
+    if isinstance(watcher, basestring):
+        return tuple(lambda: watchable[watcher])
+    return watcher
+
+
 def get_watcher_value(watchable, watcher):
     if isinstance(watcher, basestring):
         return watchable[watcher]
     else:
-        t = tuple(watchable[w] for w in watcher[:-1])
-        return watcher[-1](*t)
+        return watcher[-1]()
 
 
-class Watcher:
-    def __init__(self, widget, watchable, watcher):
+class Observer:
+    def __init__(self, widget, watchable, watch_values, watcher):
         self.widget = widget
         self.watchable = watchable
         self.watcher = watcher
-        for w in set(get_watchers(watcher)):
-            watchable.bind(self.callback, w)
+        for watch_value in set(watch_values):
+            watchable.bind(self.callback, watch_value)
+
+    def callback(self):
+        raise NotImplementedError()
+
+
+class Watcher(Observer):
+    def __init__(self, widget, watchable, watcher):
+        Observer.__init__(self, widget, watchable, get_watcher_names(watcher), watcher)
 
     def get_value(self, value=None):
         if self.watcher not in self.watchable:
@@ -107,7 +120,7 @@ class Watcher:
         self.watchable[self.watcher] = value
 
     def callback(self):
-        pass
+        raise NotImplementedError()
 
 
 class MultipleWatcher:
@@ -117,7 +130,7 @@ class MultipleWatcher:
         self.watchers = watchers
         watchers_all = []
         for w in watchers:
-            watchers_all += get_watchers(w)
+            watchers_all += get_watcher_names(w)
         for w in set(watchers_all):
             watchable.bind(self.callback, w)
 
@@ -125,4 +138,4 @@ class MultipleWatcher:
         return tuple(get_watcher_value(self.watchable, watcher) for watcher in self.watchers)
 
     def callback(self):
-        pass
+        raise NotImplementedError()
