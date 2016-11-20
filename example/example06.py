@@ -9,8 +9,8 @@ class MyFrame(wx.Frame):
         wx.Frame.__init__(self, parent, title=u"Addition Frame")
 
         self.model = WatchableDict()
-        self.model["a"] = 0
-        self.model["b"] = 0
+        self.model["a"] = 2
+        self.model["b"] = 3
 
         self.SetSizeHintsSz(wx.DefaultSize, wx.DefaultSize)
 
@@ -24,7 +24,7 @@ class MyFrame(wx.Frame):
                                        wx.SP_ARROW_KEYS, 0, 10, 0)
         gb_sizer.Add(self.spin_ctrl_a, wx.GBPosition(0, 0), wx.GBSpan(1, 1),
                      wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND, 5)
-        pywatch.wx.SpinCtrlWatcher(self.spin_ctrl_a, self.model, "a")
+        pywatch.wx.ValueChanger(self.spin_ctrl_a, self.model, "a")
 
         self.static_text = wx.StaticText(self, wx.ID_ANY, u"+", wx.DefaultPosition, wx.DefaultSize, 0)
         self.static_text.Wrap(-1)
@@ -35,19 +35,19 @@ class MyFrame(wx.Frame):
                                        wx.SP_ARROW_KEYS, 0, 10, 0)
         gb_sizer.Add(self.spin_ctrl_b, wx.GBPosition(0, 2), wx.GBSpan(1, 1),
                      wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND, 0)
-        pywatch.wx.SpinCtrlWatcher(self.spin_ctrl_b, self.model, "b")
+        pywatch.wx.ValueChanger(self.spin_ctrl_b, self.model, "b")
 
         self.static_text_out = wx.StaticText(self, wx.ID_ANY, u"{}", wx.DefaultPosition, wx.DefaultSize, 0)
         self.static_text_out.Wrap(-1)
         gb_sizer.Add(self.static_text_out, wx.GBPosition(1, 0), wx.GBSpan(1, 3),
                      wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
-        pywatch.wx.LabelWatcher(self.static_text_out, self.model, ("a", "b", lambda a, b: a + b))
+        pywatch.wx.LabelWatcher(self.static_text_out, self.model, ("a", "b", lambda: self.model["a"] + self.model["b"]))
 
         self.gauge = wx.Gauge(self, wx.ID_ANY, 20, wx.DefaultPosition, wx.DefaultSize, wx.GA_HORIZONTAL)
         self.gauge.SetValue(0)
         gb_sizer.Add(self.gauge, wx.GBPosition(2, 0), wx.GBSpan(1, 3),
                      wx.EXPAND | wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_CENTER_HORIZONTAL, 0)
-        pywatch.wx.ValueWatcher(self.gauge, self.model, ("a", "b", lambda a, b: a + b))
+        pywatch.wx.ValueWatcher(self.gauge, self.model, ("a", "b", lambda: self.model["a"] + self.model["b"]))
 
         gb_sizer.AddGrowableCol(0)
         gb_sizer.AddGrowableCol(2)

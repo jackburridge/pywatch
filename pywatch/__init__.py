@@ -1,11 +1,12 @@
 import logging
 import traceback
+from collections import defaultdict
 
 
 class Watchable:
     def __init__(self, parent):
         self.parent = parent
-        self.watchers = {}
+        self.watchers = defaultdict(list)
 
     def _set_watchable(self, value):
         types = {dict: WatchableDict,
@@ -34,10 +35,7 @@ class Watchable:
                     logging.error(traceback.format_exc())
 
     def bind(self, callback, name):
-        if name in self.watchers:
-            self.watchers[name].append(callback)
-        else:
-            self.watchers[name] = [callback]
+        self.watchers[name].append(callback)
 
 
 class WatchableList(list, Watchable):
@@ -74,32 +72,19 @@ class WatchableDict(dict, Watchable):
         dict.__setitem__(self, key, value)
         self._notify_watchers(key)
 
-
-def get_watcher_names(watcher):
-    if isinstance(watcher, basestring):
-        return [watcher]
-    else:
-        return watcher[:-1]
-
-
-def get_watcher(watchable, watcher):
-    if isinstance(watcher, basestring):
-        return tuple(lambda: watchable[watcher])
-    return watcher
-
-
-def get_watcher_value(watchable, watcher):
-    if isinstance(watcher, basestring):
-        return watchable[watcher]
-    else:
-        return watcher[-1]()
+    def update(self, *args, **kwargs):
+        if len(args) > 1:
+            raise TypeError("update expected at most 1 arguments, got %d" % len(args))
+        other = dict(*args, **kwargs)
+        for key in other:
+            self[key] = other[key]
 
 
 class Observer:
-    def __init__(self, widget, watchable, watch_values, watcher):
+    def __init__(self, widget, watchable, watch_values, getter):
         self.widget = widget
         self.watchable = watchable
-        self.watcher = watcher
+        self.getter = getter
         for watch_value in set(watch_values):
             watchable.bind(self.callback, watch_value)
 
@@ -109,33 +94,52 @@ class Observer:
 
 class Watcher(Observer):
     def __init__(self, widget, watchable, watcher):
-        Observer.__init__(self, widget, watchable, get_watcher_names(watcher), watcher)
+        if isinstance(watcher, basestring):
+            watch_values = [watcher]
+            getter = lambda: watchable[watcher]
+        else:
+            watch_values = watcher[:-1]
+            getter = watcher[-1]
+        Observer.__init__(self, widget, watchable, watch_values, getter)
 
-    def get_value(self, value=None):
-        if self.watcher not in self.watchable:
-            self.watchable[self.watcher] = value
-        return get_watcher_value(self.watchable, self.watcher)
-
-    def set_value(self, value):
-        self.watchable[self.watcher] = value
-
-    def callback(self):
-        raise NotImplementedError()
+    def get_value(self):
+        return self.getter()
 
 
-class MultipleWatcher:
+class MultipleWatcher(Observer):
     def __init__(self, widget, watchable, *watchers):
-        self.widget = widget
-        self.watchable = watchable
-        self.watchers = watchers
-        watchers_all = []
-        for w in watchers:
-            watchers_all += get_watcher_names(w)
-        for w in set(watchers_all):
-            watchable.bind(self.callback, w)
+        watch_values = set()
+        getters = []
+        for watcher in watchers:
+            if isinstance(watcher, basestring):
+                watch_values.add(watcher)
+                getters.append(lambda: watchable[watcher])
+            else:
+                watch_values.update(watcher[:-1])
+                getters.append(watcher[-1])
+        Observer.__init__(self, widget, watchable, watch_values, getters)
 
     def get_values(self):
-        return tuple(get_watcher_value(self.watchable, watcher) for watcher in self.watchers)
+        return tuple(get() for get in self.getter)
 
     def callback(self):
         raise NotImplementedError()
+
+
+class Changer(Watcher):
+    def __init__(self, widget, watchable, watcher):
+        test = dict()
+        test.update()
+        if isinstance(watcher, basestring):
+            watch_values = [watcher]
+            getter = lambda: watchable[watcher]
+            self.setter = lambda value: watchable.update({watcher: value})
+        else:
+            watch_values = watcher[:-2]
+            getter = watcher[-1]
+            self.setter = watcher[-2]
+        Observer.__init__(self, widget, watchable, watch_values, getter)
+
+    def set_value(self, value):
+        if self.get_value() != value:
+            self.setter(value)

@@ -15,11 +15,11 @@ class MyFrame(wx.Frame):
 
         self.text_ctrl = wx.TextCtrl(self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0)
         sizer.Add(self.text_ctrl, 0, 0, 0)
-        pywatch.wx.TextCtrlWatcher(self.text_ctrl, self.model, "text")
+        pywatch.wx.ValueChanger(self.text_ctrl, self.model, "text")
 
         self.static_text = wx.StaticText(self, wx.ID_ANY, u"Text: {0}", wx.DefaultPosition, wx.DefaultSize, 0)
         sizer.Add(self.static_text, 0, 0, 0)
-        pywatch.wx.LabelWatcher(self.static_text, self.model, ["text"])
+        pywatch.wx.LabelWatcher(self.static_text, self.model, "text")
 
         self.SetSizer(sizer)
 

@@ -65,14 +65,13 @@ class MyFrame(wx.Frame):
         model["bool"] = True
         model["text"] = "text"
         pywatch.wx.LabelWatcher(self.static_text, model, "number", "text")
-        pywatch.wx.SpinCtrlWatcher(self.spin_ctrl, model, "number")
-        pywatch.wx.SliderWatcher(self.slider, model, "number")
+        pywatch.wx.ValueChanger(self.spin_ctrl, model, "number")
+        pywatch.wx.ValueChanger(self.slider, model, "number")
         pywatch.wx.ValueWatcher(self.gauge, model, "number")
-        pywatch.wx.CheckBoxWatcher(self.check_box, model, "bool")
+        pywatch.wx.ValueChanger(self.check_box, model, "bool")
         pywatch.wx.LabelWatcher(self.toggle_btn, model, "number")
-        pywatch.wx.ToggleButtonWatcher(self.toggle_btn, model, "bool")
-        pywatch.wx.TextCtrlWatcher(self.text_ctrl, model, "text")
-        pywatch.wx.TextCtrlWatcher(self.search_ctrl, model, "text")
+        pywatch.wx.ValueChanger(self.toggle_btn, model, "bool")
+        pywatch.wx.ValueChanger(self.text_ctrl, model, "text")
         pywatch.wx.EnableWatcher(self.spin_ctrl, model, "bool")
         pywatch.wx.LabelMarkupWatcher(self.static_text_markup, model, "text")
 

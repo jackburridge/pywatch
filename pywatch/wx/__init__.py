@@ -1,6 +1,7 @@
 import wx
 
-from .. import Watcher, MultipleWatcher
+from .. import Watcher, MultipleWatcher, Changer
+
 
 
 def call_after(func):
@@ -48,7 +49,7 @@ class LabelMarkupWatcher(MultipleWatcher):
 class ValueWatcher(Watcher):
     def __init__(self, widget, watchable, watcher):
         Watcher.__init__(self, widget, watchable, watcher)
-        self.widget.SetValue(self.get_value(self.widget.GetValue()))
+        self.widget.SetValue(self.get_value())
 
     @call_after
     def callback(self):
@@ -56,21 +57,53 @@ class ValueWatcher(Watcher):
             self.widget.SetValue(self.get_value())
 
 
-class ValueChangeWatcher(ValueWatcher):
-    def __init__(self, widget, watchable, watcher, event):
-        ValueWatcher.__init__(self, widget, watchable, watcher)
-        widget.Bind(event, self.on_change)
+value_events = {
+    wx.SpinCtrl: wx.EVT_SPINCTRL,
+    wx.Slider: wx.EVT_SLIDER,
+    wx.CheckBox: wx.EVT_CHECKBOX,
+    wx.ToggleButton: wx.EVT_TOGGLEBUTTON,
+    wx.TextCtrl: wx.EVT_TEXT
+}
+
+
+class ValueChanger(Changer):
+    def __init__(self, widget, watchable, watcher):
+        event = [value_events[widget_class] for widget_class in value_events if isinstance(widget, widget_class)]
+        if not event:
+            raise Exception('Widget type is not recognised')
+        Changer.__init__(self, widget, watchable, watcher)
+        self.widget.SetValue(self.get_value())
+        widget.Bind(event[0], self.on_change)
 
     def on_change(self, event):
         self.set_value(self.widget.GetValue())
         event.Skip()
 
+    @call_after
+    def callback(self):
+        current_value = self.widget.GetValue()
+        new_value = self.get_value()
+        if self.widget.GetValue() != self.get_value():
+            self.widget.SetValue(self.get_value())
 
-class SelectionChangeWatcher(Watcher):
-    def __init__(self, widget, watchable, watcher, event):
-        Watcher.__init__(self, widget, watchable, watcher)
-        self.widget.SetSelection(self.get_value(self.widget.GetSelection()))
-        widget.Bind(event, self.on_change)
+
+selection_events = {
+    wx.ComboBox: wx.EVT_COMBOBOX,
+    wx.Choice: wx.EVT_CHOICE,
+    wx.ListBox: wx.EVT_LISTBOX,
+    wx.RadioBox: wx.EVT_RADIOBOX
+}
+
+
+class SelectionChanger(Changer):
+    def __init__(self, widget, watchable, watcher):
+        event = [selection_events[widget_class] for widget_class in selection_events if
+                 isinstance(widget, widget_class)]
+        if not event:
+            raise Exception('Widget type is not recognised')
+        Changer.__init__(self, widget, watchable, watcher)
+        self.widget.SetSelection(self.get_value())
+        widget.Bind(event[0], self.on_change)
 
     @call_after
     def callback(self):
@@ -82,55 +115,11 @@ class SelectionChangeWatcher(Watcher):
         event.Skip()
 
 
-class ListBoxWatcher(SelectionChangeWatcher):
-    def __init__(self, list_box, watchable, watcher):
-        SelectionChangeWatcher.__init__(self, list_box, watchable, watcher, wx.EVT_LISTBOX)
-
-
-class RadioBoxWatcher(SelectionChangeWatcher):
-    def __init__(self, radio_box, watchable, watcher):
-        SelectionChangeWatcher.__init__(self, radio_box, watchable, watcher, wx.EVT_RADIOBOX)
-
-
-class ChoiceWatcher(SelectionChangeWatcher):
-    def __init__(self, radio_box, watchable, watcher):
-        SelectionChangeWatcher.__init__(self, radio_box, watchable, watcher, wx.EVT_CHOICE)
-
-
-class ComboBoxWatcher(SelectionChangeWatcher):
-    def __init__(self, radio_box, watchable, watcher):
-        SelectionChangeWatcher.__init__(self, radio_box, watchable, watcher, wx.EVT_COMBOBOX)
-
-
-class SpinCtrlWatcher(ValueChangeWatcher):
-    def __init__(self, spin_ctrl, watchable, watcher):
-        ValueChangeWatcher.__init__(self, spin_ctrl, watchable, watcher, wx.EVT_SPINCTRL)
-
-
-class SliderWatcher(ValueChangeWatcher):
-    def __init__(self, spin_ctrl, watchable, watcher):
-        ValueChangeWatcher.__init__(self, spin_ctrl, watchable, watcher, wx.EVT_SCROLL)
-
-
-class CheckBoxWatcher(ValueChangeWatcher):
-    def __init__(self, check_box, watchable, watcher):
-        ValueChangeWatcher.__init__(self, check_box, watchable, watcher, wx.EVT_CHECKBOX)
-
-
-class ToggleButtonWatcher(ValueChangeWatcher):
-    def __init__(self, toggle_btn, watchable, watcher):
-        ValueChangeWatcher.__init__(self, toggle_btn, watchable, watcher, wx.EVT_TOGGLEBUTTON)
-
-
-class TextCtrlWatcher(ValueChangeWatcher):
-    def __init__(self, text_ctrl, watchable, watcher):
-        ValueChangeWatcher.__init__(self, text_ctrl, watchable, watcher, wx.EVT_TEXT)
-
-
 class ItemContainerItemWatcher(Watcher):
     def __init__(self, item_container, watchable, watcher):
         Watcher.__init__(self, item_container, watchable, watcher)
-        self.callback()
+        for item in self.get_value():
+            index = self.widget.Append("{0}".format(item), item)
 
     @call_after
     def callback(self):
@@ -139,7 +128,7 @@ class ItemContainerItemWatcher(Watcher):
             data = self.widget.GetClientData(self.widget.GetSelection())
         self.widget.Freeze()
         self.widget.Clear()
-        for item in self.watchable[self.watcher]:
+        for item in self.get_value():
             index = self.widget.Append("{0}".format(item), item)
             if data is not None and item is data:
                 self.widget.SetSelection(index)

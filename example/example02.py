@@ -54,7 +54,8 @@ class MyFrame(wx.Frame):
 
         self.model = WatchableDict()
         self.model["list"] = []
-        pywatch.wx.TextCtrlWatcher(self.text_ctrl, self.model, "text")
+        self.model["text"] = ""
+        pywatch.wx.ValueChanger(self.text_ctrl, self.model, "text")
         pywatch.wx.ItemContainerItemWatcher(self.list_box, self.model, "list")
         pywatch.wx.ItemContainerItemWatcher(self.choice, self.model, "list")
         pywatch.wx.ItemContainerItemWatcher(self.combo_box, self.model, "list")
