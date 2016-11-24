@@ -41,7 +41,8 @@ class Watchable:
 class WatchableList(list, Watchable):
     def __init__(self, iterable=None, parent=None):
         Watchable.__init__(self, parent)
-        list.__init__(self, iterable)
+        watchable_iterable = [self._set_watchable(item) for item in iterable]
+        list.__init__(self, watchable_iterable)
 
     def __setitem__(self, key, value):
         value = self._set_watchable(value)
@@ -50,18 +51,27 @@ class WatchableList(list, Watchable):
 
     def append(self, p_object):
         value = self._set_watchable(p_object)
-        list.append(self, p_object)
+        list.append(self, value)
+        self._notify_parent()
+
+    def pop(self, index=None):
+        list.pop(self, index)
         self._notify_parent()
 
 
 class WatchableDict(dict, Watchable):
-    def __init__(self, parent=None, **kwargs):
+    def __init__(self, seq=None, **kwargs):
+        parent = kwargs.pop('parent', None)
         Watchable.__init__(self, parent)
-        dict.__init__(self, **kwargs)
+        iterable_seq = {}
+        if seq:
+            for key, value in dict(seq).iteritems():
+                iterable_seq[key] = self._set_watchable(value)
+        dict.__init__(self, iterable_seq, **kwargs)
 
     def child_change(self, value):
         if self.parent:
-            self.parent.child_change()
+            self.parent.child_change(self)
         for key, item in self.iteritems():
             if item == value:
                 self._notify_watchers(key)
@@ -128,8 +138,6 @@ class MultipleWatcher(Observer):
 
 class Changer(Watcher):
     def __init__(self, widget, watchable, watcher):
-        test = dict()
-        test.update()
         if isinstance(watcher, basestring):
             watch_values = [watcher]
             getter = lambda: watchable[watcher]
