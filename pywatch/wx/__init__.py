@@ -116,10 +116,11 @@ class SelectionChanger(Changer):
 
 
 class ItemContainerItemWatcher(Watcher):
-    def __init__(self, item_container, watchable, watcher):
+    def __init__(self, item_container, watchable, watcher, format_string='{0}'):
         Watcher.__init__(self, item_container, watchable, watcher)
+        self.format_string = format_string
         for item in self.get_value():
-            index = self.widget.Append("{0}".format(item), item)
+            index = self.widget.Append(format_string.format(item), item)
 
     @call_after
     def callback(self):
@@ -129,7 +130,7 @@ class ItemContainerItemWatcher(Watcher):
         self.widget.Freeze()
         self.widget.Clear()
         for item in self.get_value():
-            index = self.widget.Append("{0}".format(item), item)
+            index = self.widget.Append(self.format_string.format(item), item)
             if data is not None and item is data:
                 self.widget.SetSelection(index)
         self.widget.Thaw()
